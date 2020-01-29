@@ -79,9 +79,14 @@ clear_screen .proc
         rts
 .pend
 
+.dsection base
+.section base
 base    .binclude "pui-base.s"
+.send
+.dsection frame
+.section frame
 frame   .binclude "pui-frame.s"
-
+.send
 
 
 

@@ -47,8 +47,6 @@ set_size .proc
 ;
 ; @zeropage     8
 ;
-; @TODO         implement rendering title
-;
 render .proc
 
         vidram = PUI_ZP + 0
@@ -75,16 +73,22 @@ render .proc
         sty vidram + 1
 
         ldx data.frame_width
+.if DEBUG
         stx $0404
+.endif
         dex
         dex
         stx content_width
+.if DEBUG
         stx $0406
+.endif
         ldy data.frame_height
         dey
         dey
         sty content_height
+.if DEBUG
         sty $0407
+.endif
 
         ; render top-left corner
         ldy #0
@@ -95,20 +99,34 @@ render .proc
 
         ; render top border
         ldx content_width
+
+        lda title + 0
+        ora title + 1
+        beq title_done
+        lda (title),y
+        sta color
 -       iny
-        lda #SCRCODES.FRAME_TOP_MIDDLE
+        lda (title),y
+        beq title_done
+        sta (vidram),y
+        lda color
+        sta (colram),y
+        dex
+        bne -
+        iny
+title_done
+-       lda #SCRCODES.FRAME_TOP_MIDDLE
         sta (vidram),y
         lda data.frame_color
         sta (colram),y
+        iny
         dex
         bne -
 
         ; render top-right corner
-        iny
         sta (colram),y
         lda #SCRCODES.FRAME_TOP_RIGHT
         sta (vidram),y
-
 
         ; render left and right border and wipe frame content
         lda vidram + 0
@@ -119,11 +137,11 @@ render .proc
         bcc +
         inc vidram + 1
         inc colram + 1
-+
-
-        ldx content_height
++       ldx content_height
+.if DEBUG
         stx $0408
-;        ldx #5
+.endif
+
 more_rows
         ; render left border
         ldy #0
@@ -183,35 +201,6 @@ more_rows
         sta (colram),y
         lda #SCRCODES.FRAME_BOT_RIGHT
         sta (vidram),y
-
-        lda title + 0
-        ora title + 1
-        beq done
-
-        ; render title
-        ldx data.frame_xpos
-        ldy data.frame_ypos
-        jsr base.get_screenpos
-
-        sta colram + 1
-        stx vidram + 0
-        stx colram + 0
-        sty vidram + 1
-
-        ldy #0
-        lda (title),y
-        sta color
-
-        ; move vidram/colram pos one right AND skip the color byte
--       iny
-        ; render 0-terminated screencodes as title
-        lda (title),y
-        beq done
-        sta (vidram),y
-        lda color
-        sta (colram),y
-        jmp -
-done
         rts
 .pend
 
