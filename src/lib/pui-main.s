@@ -1,7 +1,21 @@
 ; vim: set et ts=8 sw=8 sts=8 syntax=64tass:
 ;
 
-        PUI_ZP_TMP = PUI_ZP + $10
+; Allocate zero page 'variables'
+;
+; Use some zp locations for often reused data and thus make them survive
+; between routines so we can avoid having to calculate the data again, both
+; speeding up the code and making it smaller
+;
+; Use other zp locations for data that should persist from the top of a call
+; stack of a dialog routine and finally use some zp locations as scratch space:
+; these locations are expected to only be used/valid inside a routine.
+
+        pui_vram = PUI_ZEROPAGE         ; PUI_ZEROPAGE+0/PUI_ZEROPAGE+1
+        pui_cram = pui_vram + 2         ; PUI_ZEROPAGE+2/PUI_ZEROPAGE+3
+        pui_zp   = pui_cram + 2         ; PUI_ZEROPAGE+4/PUI_ZEROPAGE+5
+
+        pui_zp_tmp = PUI_ZEROPAGE + $18
 
 
 .include "pui-screencodes.inc"
@@ -58,21 +72,19 @@ init .proc
 ;
 clear_screen .proc
 
-        vidram = PUI_ZP
-
         ldy #0
-        sty vidram + 0
+        sty pui_vram + 0
         lda data.screen
-        sta vidram + 1
+        sta pui_vram + 1
         lda #$ff
         ldx #3
--       sta (vidram),y
+-       sta (pui_vram),y
         iny
         bne -
-        inc vidram + 1
+        inc pui_vram + 1
         dex
         bne -
--       sta (vidram),y
+-       sta (pui_vram),y
         iny
         cpy #$e8
         bne -

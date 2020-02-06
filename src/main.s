@@ -6,7 +6,7 @@
 
         .word (+), 2020
         .null $9e, format("%d", start)
-+        .word 0
++       .word 0
 
 
 start
@@ -22,6 +22,10 @@ start
         rts
 
 
+;; @brief       Render a test frame with title
+;
+; @clobbers     all
+;
 test_frame .proc
         ldx #08
         ldy #04
@@ -37,10 +41,11 @@ test_frame .proc
         rts
 .pend
 
+;; @brief       Test frame title
 test_frame_title
         .enc "screen"
 
-        .byte $01
+        .byte $01       ; color
         .text "hello world!", 0
 
 

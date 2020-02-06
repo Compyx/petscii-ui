@@ -11,7 +11,7 @@ ASM = 64tass
 ASM_FLAGS = --case-sensitive --ascii --vice-labels --labels $(LABEL_FILE) \
 	    -Wall -Walias -Waltmode -Wbranch-page -Wcase-symbol \
 	    -Wno-leading-zeros \
-	    -D PUI_ZP='$$10' -D DEBUG=true
+	    -D PUI_ZEROPAGE='$$10' -D DEBUG=true
 
 
 LIB_SOURCES = src/lib/pui-main.s src/lib/pui-base.s src/lib/pui-frame.s

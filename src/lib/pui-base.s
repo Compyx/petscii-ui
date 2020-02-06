@@ -8,7 +8,10 @@
 
 
 
-; @brief        Get screen vidram and colorram position based on @a X and @a Y
+;; @brief       Get vidram and colram position based on @a X and @a Y
+;
+; Doesn't touch pui_vram/pui_cram zero page locations, to store result in
+; the pui_vram/pui_cram zero page locations, use @ref get_screenpos_zp.
 ;
 ; @param X      xpos
 ; @param Y      ypos
@@ -27,6 +30,29 @@ get_screenpos .proc
         tay
         and #$03
         ora #$d8
+        rts
+.pend
+
+
+;; @brief       Get vidram and colram position based on @a X and @a Y
+;
+; Stores result in the pui_vram/pui_cram zero page locations,
+; use @ref get_screenpos to avoid that.
+;
+; @param X      xpos
+; @param Y      ypos
+;
+; @return A     colram MSB
+; @return X     colram/vidram LSB
+; @return Y     vidram MSB
+;
+
+get_screenpos_zp .proc
+        jsr get_screenpos
+        stx pui_vram + 0
+        sty pui_vram + 1
+        stx pui_cram + 0
+        sta pui_cram + 1
         rts
 .pend
 
@@ -53,16 +79,10 @@ text_renderer_set_pos .proc
 ;
 text_renderer_render .proc
 
-        vidram = PUI_ZP + 0
-        colram = PUI_ZP + 2
-        columns = PUI_ZP + 4
+        columns = pui_zp
 
         sta columns
-        jsr get_screenpos
-        stx vidram + 0
-        sty vidram + 1
-        stx colram + 0
-        sta colram + 1
+        jsr get_screenpos_zp
         rts
 .pend
 
